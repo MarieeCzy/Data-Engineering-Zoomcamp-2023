@@ -1,3 +1,21 @@
+.DS_Store
+.idea
+*.tfstate
+*.tfstate.*
+**.terraform
+**.terraform.lock.*
+**google_credentials.json
+**logs/
+**.env
+**__pycache__/
+.history
+**/ny_taxi_postgres_data/*
+serving_dir
+*.csv
+*.xlsx
+.ipynb_checkpoints/
+*.csv.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
