@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from time import time
 import  argparse
+import os
 
 def main(params):
     
@@ -9,11 +10,13 @@ def main(params):
     password = params.password
     host = params.host
     port = params.port
-    db = params.database
+    db = params.db
     table_name = params.table_name
-    csv_name = 'output.csv'
+    url = params.url
+    csv_name = 'output.csv.gz'
     
     #dwonload the csv
+    os.system(f"python3 -m wget {url} -o {csv_name}")
     
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
 
@@ -37,19 +40,31 @@ def main(params):
         df.to_sql(name=table_name, con=engine, if_exists='append')
         end_time = time()
     
-    print('Another chunk loaded in: %3f seconds.' %(end_time - start_time))
+        print('Another chunk loaded in: %3f seconds.' %(end_time - start_time))
+  
+if __name__ == '__main__':  
+    parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
+
+    parser.add_argument('--user', help='username for postgres')
+    parser.add_argument('--password', help='password for postgres')
+    parser.add_argument('--host', help='host for postgres')
+    parser.add_argument('--port', help='port for postgres')
+    parser.add_argument('--db', help='database name for postgres')
+    parser.add_argument('--table_name', help='name of the table where we will wirte the results to')
+    parser.add_argument('--url', help='url of the csv file')
+
+    args = parser.parse_args()
     
-parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
-
-parser.add_argument('user', help='username for postgres')
-parser.add_argument('password', help='password for postgres')
-parser.add_argument('host', help='host for postgres')
-parser.add_argument('port', help='port for postgres', type=int)
-parser.add_argument('db', help='database name for postgres')
-parser.add_argument('table_name', help='name of the table where we will wirte the results to')
-parser.add_argument('url', help='url of the csv file')
-
-args = parser.parse_args()
-
-if __name__ == 'main':
-    main()
+    main(args)
+    
+    '''
+    python3 ingest_data.py \
+        --user=root \
+        --password=... \
+        --host=localhost \
+        --port=5432 \
+        --db=ny_taxi \
+        --table_name=yellow_taxi_trips \
+        --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2019-01.csv.gz"
+    
+    '''
