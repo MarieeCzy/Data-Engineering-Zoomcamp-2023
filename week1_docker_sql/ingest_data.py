@@ -15,6 +15,11 @@ def main(params):
     url = params.url
     csv_name = 'output.csv.gz'
     
+    if url.endswith('.csv.gz'):
+        csv_name = 'output.csv.gz'
+    else:
+        csv_name = 'output.csv'
+    
     #dwonload the csv
     os.system(f"python3 -m wget {url} -o {csv_name}")
     
@@ -33,15 +38,20 @@ def main(params):
 
     #load rest of chunks
     while True:
-        start_time = time()
-        df = next(df_iter)
-        df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-        df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-        df.to_sql(name=table_name, con=engine, if_exists='append')
-        end_time = time()
+        try:
+            start_time = time()
+            df = next(df_iter)
+            df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+            df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+            df.to_sql(name=table_name, con=engine, if_exists='append')
+            end_time = time()
+        
+            print('Another chunk loaded in: %3f seconds.' %(end_time - start_time))
     
-        print('Another chunk loaded in: %3f seconds.' %(end_time - start_time))
-  
+        except StopIteration:
+            print("Finished ingesting data into the postgres database")
+            break
+        
 if __name__ == '__main__':  
     parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
 
@@ -66,5 +76,17 @@ if __name__ == '__main__':
         --db=ny_taxi \
         --table_name=yellow_taxi_trips \
         --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2019-01.csv.gz"
-    
+    '''
+    '''
+    docker run -it \
+        --network=pg-network \
+        taxi_ingest:v001 \
+            --user=root \
+            --password=root \
+            --host=pg-database \
+            --port=5432 \
+            --db=ny_taxi \
+            --table_name=yellow_taxi_trips \
+            --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2019-01.csv.gz"
+        
     '''
