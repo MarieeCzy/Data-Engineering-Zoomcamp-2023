@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from prefect import flow, task
 
 
+@task(log_prints=True, retries=3)
 def ingest_data(user, password, host, port, db, table_name, url):
     
     # the backup files are gzipped, and it's important to keep the correct extension
@@ -36,7 +37,7 @@ def ingest_data(user, password, host, port, db, table_name, url):
 
     df.to_sql(name=table_name, con=engine, if_exists='append')
 
-
+'''
     while True: 
 
         try:
@@ -55,10 +56,10 @@ def ingest_data(user, password, host, port, db, table_name, url):
 
         except StopIteration:
             print("Finished ingesting data into the postgres database")
-            break
+            break'''
 
-@flow(name )
-if __name__ == '__main__':
+@flow(name='Ingest Flow')
+def main_flow():
     user = "postgres"
     password = "admin"
     host = "localhost"
@@ -68,3 +69,7 @@ if __name__ == '__main__':
     csv_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 
     ingest_data(user, password, host, port, db, table_name, csv_url)
+    
+if __name__ == '__main__':
+    main_flow()
+    
