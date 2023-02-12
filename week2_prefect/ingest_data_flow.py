@@ -11,7 +11,7 @@ from datetime import timedelta
 from prefect_sqlalchemy import SqlAlchemyConnector
 
 @task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
-def extract_data(url):
+def extract_data(url:str) -> pd.DataFrame:
    
     # the backup files are gzipped, and it's important to keep the correct extension 
     # for pandas to be able to open the file
@@ -32,7 +32,7 @@ def extract_data(url):
     return df
     
 @task(log_prints=True)
-def transform_data(df):
+def transform_data(df:pd.DataFrame) -> pd.DataFrame:
     print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
     df = df[df['passenger_count'] != 0]
     print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
@@ -40,7 +40,7 @@ def transform_data(df):
 
 
 @task(log_prints=True, retries=3)
-def ingest_data(table_name, df):
+def ingest_data(table_name:str, df:pd.DataFrame) -> None:
     
     connection_block = SqlAlchemyConnector.load("postgres-connector")
     with connection_block.get_connection(begin=False) as engine:
@@ -68,11 +68,11 @@ def ingest_data(table_name, df):
             print("Finished ingesting data into the postgres database")
             break'''
 @flow(name='Subflow', log_prints=True)
-def log_subflow(table_name:str):
+def log_subflow(table_name:str) -> None:
     print(f'Logging subflow for: {table_name}')
 
 @flow(name='Ingest Flow')
-def main_flow(table_name: str):
+def main_flow(table_name:str) -> None:
     user = "postgres"
     password = "admin"
     host = "localhost"
