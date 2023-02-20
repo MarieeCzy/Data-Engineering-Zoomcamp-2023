@@ -21,8 +21,17 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
  
 @task(log_prints=True)
 def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
-    
+    '''Write DataFrame out locally as parquet file '''
+    path = Path(f'data/{color}/{dataset_file}.parquet')
+    df.to_parquet(path, compression='gzip')
+    return path
 
+@task(log_prints=True)
+def write_gcs(path: Path) -> None:
+    '''Uploading local parquet file to GCS'''
+    gcs_block = GcsBucket.load("gcs-bucket")
+    gcs_block.upload_from_path(from_path=path, to_path=path)
+    return
 
 @flow(log_prints=True)
 def etl_web_to_gcs() -> None:
@@ -36,6 +45,7 @@ def etl_web_to_gcs() -> None:
     df = fetch(dataset_url)
     clean_df = clean(df)
     path = write_local(clean_df, color, dataset_file)
+    write_gcs(path)
 
 if __name__ == "__main__":
     etl_web_to_gcs()
