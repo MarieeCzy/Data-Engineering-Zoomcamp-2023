@@ -28,7 +28,7 @@ def write_bg(df: pd.DataFrame) -> None:
     gcp_credentials_block = GcpCredentials.load("zoom-gcp-creds")
     
     df.to_gbq(
-        destination_table= 'dezoomcamp.rides',
+        destination_table= 'dezoomcamp2.rides',
         project_id= 'focus-poet-376519',
         credentials= gcp_credentials_block.get_credentials_from_service_account(),
         chunksize=500_000,
