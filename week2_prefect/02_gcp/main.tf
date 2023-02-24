@@ -17,11 +17,11 @@ provider "google" {
 #}
 
 resource "google_bigquery_dataset" "default" {
-  dataset_id = "dezoomcamp"
-  location = "EU"
+  dataset_id = "dezoomcamp2"
+  location   = "US"
 }
 
-resource "google_bigquery_table" "default"{
+resource "google_bigquery_table" "default" {
   dataset_id = google_bigquery_dataset.default.dataset_id
-  table_id = "rides"
+  table_id   = "rides"
 }
