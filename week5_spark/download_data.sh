@@ -8,6 +8,12 @@ YEAR=$2 #2020
 
 URL_PREFIX="https://github.com/DataTalksClub/nyc-tlc-data/releases/download"
 
+#log file 
+LOGGER="log.txt"
+LOGGER_URL="data/raw"
+touch  "${LOGGER_URL}/${LOGGER}"
+echo "Log file for ${TAXI_TYPE}_${YEAR} dataset:" >> "${LOGGER_URL}/${LOGGER}"
+
 for MONTH in {1..12}; do
     FMONTH=`printf "%02d" ${MONTH}`
 
@@ -17,15 +23,18 @@ for MONTH in {1..12}; do
     LOCAL_FILE="${TAXI_TYPE}_tripdata_${YEAR}_${FMONTH}.csv.gz"
     LOCAL_PATH="${LOCAL_PREFIX}/${LOCAL_FILE}"
 
-    LOGGER="log.txt"
-    LOGGER_URL="data/raw"
-
     echo "Downloading ${URL} to ${LOCAL_PATH}"
 
     mkdir -p ${LOCAL_PREFIX}
-    touch  "${LOGGER_URL}/${LOGGER}"
 
     wget ${URL} -O ${LOCAL_PATH}
-    echo "${LOCAL_FILE} downloaded" >> "${LOGGER_URL}/${LOGGER}"
+
+    #save info when finished
+    echo "" >> "${LOGGER_URL}/${LOGGER}"
+    echo "${LOCAL_FILE} downloaded - $(date)" >> "${LOGGER_URL}/${LOGGER}"
 
 done
+
+echo "" >> "${LOGGER_URL}/${LOGGER}"
+echo "Log info available in ${LOGGER_URL}/${LOGGER} file"
+open "${LOGGER_URL}/${LOGGER}"
