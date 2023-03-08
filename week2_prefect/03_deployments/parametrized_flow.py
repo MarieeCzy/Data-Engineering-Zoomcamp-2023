@@ -5,7 +5,8 @@ from prefect_gcp.cloud_storage import GcsBucket
 from prefect.tasks import task_input_hash
 from datetime import timedelta
 
-@task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+@task(log_prints=True, retries=3)
+      #cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def fetch(dataset_url: str) -> pd.DataFrame:
     '''Read taaxi data from web into pandas DataFrame'''
     df = pd.read_csv(dataset_url)
@@ -48,7 +49,7 @@ def etl_web_to_gcs(year: int, month: int, color: str) -> None:
 
 @flow()
 def etl_parent_flow(
-    months: list[int], year: int = 2021, color: str = 'yellow'
+    months: list[int] = [1,2], year: int = 2021, color: str = 'yellow'
 ):
     for month in months:
         etl_web_to_gcs(year, month, color)   
